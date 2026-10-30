@@ -1,0 +1,14 @@
+{
+  "name": "trusted-daily-news",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "npm --prefix server start",
+    "test": "npm --prefix server test",
+    "export": "node scripts/export-site.js",
+    "cloud:cycle": "node --env-file-if-exists=server/.env scripts/cloud-cycle.js"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

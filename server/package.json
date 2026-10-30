@@ -1,0 +1,21 @@
+{
+  "name": "news-aggregator-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env --experimental-sqlite src/index.js",
+    "generate": "node --env-file-if-exists=.env --experimental-sqlite src/brief/runner.js --generate",
+    "check:sources": "node --env-file-if-exists=.env src/brief/check-sources.js --save",
+    "collect": "node --experimental-sqlite src/collect-once.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@mozilla/readability": "^0.6.0",
+    "fast-xml-parser": "^4.5.0",
+    "linkedom": "^0.18.14"
+  }
+}

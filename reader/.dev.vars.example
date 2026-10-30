@@ -1,0 +1,3 @@
+# Copy to .dev.vars for LOCAL development only. Do not commit real values.
+LLM_API_KEY=
+LLM_MODEL=deepseek-flash

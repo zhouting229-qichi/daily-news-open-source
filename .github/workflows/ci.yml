@@ -1,0 +1,34 @@
+name: Test
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  collector:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm --prefix server ci --ignore-scripts --no-audit --no-fund
+      - run: npm test
+  reader:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: reader
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: reader/package-lock.json
+      - run: npm run install:ci
+      - run: npm test
+      - run: npm run build

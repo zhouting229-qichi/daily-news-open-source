@@ -1,0 +1,27 @@
+[
+  { "id": "wsj",         "name": "The Wall Street Journal", "type": "official",    "url": "https://feeds.content.dowjones.io/public/rss/RSSWorldNews",            "paywall": true  },
+  { "id": "yomiuri",     "name": "The Yomiuri Shimbun",    "type": "google-news", "url": "https://news.google.com/rss/search?q=yomiuri%20shimbun&hl=en-US&gl=US&ceid=US:en",   "host": "yomiuri.co.jp",   "paywall": false },
+  { "id": "asahi",       "name": "The Asahi Shimbun",      "type": "google-news", "url": "https://news.google.com/rss/search?q=asahi%20shimbun&hl=en-US&gl=US&ceid=US:en",     "host": "asahi.com",       "paywall": false },
+  { "id": "time",        "name": "TIME",                   "type": "official",    "url": "https://time.com/feed/",                                                "paywall": false },
+  { "id": "bbc",         "name": "BBC",                    "type": "official",    "url": "http://feeds.bbci.co.uk/news/world/rss.xml",                            "paywall": false },
+  { "id": "economist",   "name": "The Economist",          "type": "google-news", "url": "https://news.google.com/rss/search?q=the%20economist&hl=en-US&gl=US&ceid=US:en",     "host": "economist.com",   "paywall": true  },
+  { "id": "xinhua",      "name": "Xinhua",                 "type": "google-news", "url": "https://news.google.com/rss/search?q=xinhua&hl=en-US&gl=US&ceid=US:en",               "host": "english.news.cn", "paywall": false },
+
+  { "id": "guardian",    "name": "The Guardian",            "type": "official",    "url": "https://www.theguardian.com/world/rss",                                  "paywall": false },
+  { "id": "nyt",         "name": "The New York Times",      "type": "official",    "url": "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",              "paywall": true  },
+  { "id": "ft",          "name": "Financial Times",         "type": "official",    "url": "https://www.ft.com/rss/world",                                          "paywall": true  },
+  { "id": "npr",         "name": "NPR",                     "type": "official",    "url": "https://feeds.npr.org/1001/rss.xml",                                     "paywall": false },
+  { "id": "fox",         "name": "FOX News",               "type": "official",    "url": "https://moxie.foxnews.com/feedburner/latest.xml",                       "paywall": false },
+  { "id": "wapo",        "name": "The Washington Post",     "type": "official",    "url": "https://feeds.washingtonpost.com/rss/world",                            "paywall": true  },
+  { "id": "rt",          "name": "RT",                      "type": "official",    "url": "https://www.rt.com/rss/",                                               "paywall": false },
+  { "id": "yonhap",      "name": "Yonhap",                  "type": "official",    "url": "https://en.yna.co.kr/RSS/news.xml",                                     "paywall": false },
+
+  { "id": "bloomberg",   "name": "Bloomberg",              "type": "google-news", "url": "https://news.google.com/rss/search?q=bloomberg&hl=en-US&gl=US&ceid=US:en",            "host": "bloomberg.com",   "paywall": true  },
+  { "id": "reuters",     "name": "Reuters",                "type": "google-news", "url": "https://news.google.com/rss/search?q=reuters&hl=en-US&gl=US&ceid=US:en",              "host": "reuters.com",     "paywall": false },
+  { "id": "ap",          "name": "Associated Press",       "type": "google-news", "url": "https://news.google.com/rss/search?q=associated%20press&hl=en-US&gl=US&ceid=US:en", "host": "apnews.com",      "paywall": false },
+  { "id": "afp",         "name": "AFP",                    "type": "google-news", "url": "https://news.google.com/rss/search?q=agence%20france%20presse&hl=en-US&gl=US&ceid=US:en", "host": "afp.com",   "paywall": false },
+  { "id": "thetimes",    "name": "The Times",              "type": "google-news", "url": "https://news.google.com/rss/search?q=the%20times&hl=en-US&gl=US&ceid=US:en",         "host": "thetimes.com",    "paywall": true  },
+  { "id": "kyodo",       "name": "Kyodo News",             "type": "google-news", "url": "https://news.google.com/rss/search?q=kyodonews&hl=en-US&gl=US&ceid=US:en",           "host": "kyodonews.net",   "paywall": false },
+  { "id": "nhk",         "name": "NHK",                    "type": "google-news", "url": "https://news.google.com/rss/search?q=nhk&hl=en-US&gl=US&ceid=US:en",                   "host": "nhk.or.jp",       "paywall": false },
+  { "id": "cnn",         "name": "CNN",                    "type": "google-news", "url": "https://news.google.com/rss/search?q=cnn&hl=en-US&gl=US&ceid=US:en",                  "host": "cnn.com",         "paywall": false }
+]

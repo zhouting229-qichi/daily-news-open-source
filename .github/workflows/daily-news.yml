@@ -1,0 +1,138 @@
+name: Daily News Cloud
+# Opt in with DAILY_NEWS_ENABLED=true after configuring your own model secret.
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/daily-news.yml']
+  schedule:
+    # Hourly collection; the app generates at most one successful edition per
+    # 08:00 Shanghai cycle. Minute 17 avoids the busiest top-of-hour period.
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-news-cloud
+  cancel-in-progress: false
+
+jobs:
+  update:
+    # No paid generation runs until the deployment owner opts in.
+    if: vars.DAILY_NEWS_ENABLED == 'true' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      pages: write
+    outputs:
+      pages_ready: ${{ steps.pages_upload.outcome == 'success' }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - name: Check model configuration without printing secret values
+        env:
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL || 'https://api.deepseek.com' }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL || 'deepseek-flash' }}
+        run: |
+          if [ -z "$LLM_BASE_URL" ] || [ -z "$LLM_API_KEY" ] || [ -z "$LLM_MODEL" ]; then
+            echo 'Configure LLM_API_KEY in repository Secrets. Optional LLM_BASE_URL and LLM_MODEL override the DeepSeek defaults.'
+            exit 1
+          fi
+      - name: Install dependencies
+        run: npm --prefix server ci --ignore-scripts --no-audit --no-fund
+      - name: Configure optional Pages publication
+        id: pages
+        if: vars.PAGES_ENABLED == 'true'
+        uses: actions/configure-pages@v5
+      - name: Resolve website base path
+        id: base
+        env:
+          CUSTOM_BASE: ${{ vars.PUBLIC_BASE_PATH }}
+          PAGES_BASE: ${{ steps.pages.outputs.base_path }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          REPO_OWNER: ${{ github.repository_owner }}
+        run: |
+          node --input-type=module -e '
+            import {appendFileSync} from "node:fs";
+            const inferred=process.env.REPO_NAME.toLowerCase()===process.env.REPO_OWNER.toLowerCase()+".github.io"?"/":"/"+process.env.REPO_NAME+"/";
+            const raw=process.env.CUSTOM_BASE||process.env.PAGES_BASE||inferred;
+            const base=raw.replace(/\/+$/,"")+"/";
+            if(!/^\/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*\/)*$/.test(base)||base.includes(".."))throw Error("Invalid PUBLIC_BASE_PATH");
+            appendFileSync(process.env.GITHUB_OUTPUT,"base="+base+"\n");
+          '
+      - name: Collect, generate if due, and export website
+        id: cycle
+        continue-on-error: true
+        env:
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL || 'https://api.deepseek.com' }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL || 'deepseek-flash' }}
+          PUBLIC_BASE_PATH: ${{ steps.base.outputs.base }}
+          AUTO_GENERATE: 'false'
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: node scripts/cloud-cycle.js
+      - name: Persist cross-day state
+        id: persist
+        if: always() && steps.cycle.outcome != 'skipped' && steps.cycle.outcome != ''
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          node scripts/persist-state.js
+      - name: Sync live editions directly to private website and installed app
+        if: always() && steps.persist.outcome == 'success' && vars.DAILY_NEWS_SITE_URL != ''
+        env:
+          DAILY_NEWS_SITE_URL: ${{ vars.DAILY_NEWS_SITE_URL }}
+          DAILY_NEWS_SITE_TOKEN: ${{ secrets.DAILY_NEWS_SITE_TOKEN }}
+        run: node scripts/sync-site.mjs
+      - name: Verify production reading, archives, PWA assets and private access
+        if: always() && github.event_name != 'schedule' && steps.persist.outcome == 'success' && vars.DAILY_NEWS_SITE_URL != ''
+        env:
+          DAILY_NEWS_SITE_TOKEN: ${{ secrets.DAILY_NEWS_SITE_TOKEN }}
+          DAILY_NEWS_SITE_URL: ${{ vars.DAILY_NEWS_SITE_URL }}
+        run: node scripts/verify-site.mjs
+      - name: Upload generated website for inspection
+        if: always() && steps.persist.outcome == 'success' && hashFiles('public-site/build-ready.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-news-site
+          path: public-site/
+          retention-days: 7
+          include-hidden-files: true
+      - name: Upload Pages artifact
+        id: pages_upload
+        if: always() && vars.PAGES_ENABLED == 'true' && steps.persist.outcome == 'success' && hashFiles('public-site/build-ready.json') != ''
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: public-site
+      - name: Report a failed generation
+        if: always() && steps.cycle.outcome == 'failure'
+        run: |
+          echo 'Generation failed. Previous edition and real timestamps were retained; inspect the run before retrying.'
+          exit 1
+
+  publish:
+    needs: update
+    if: always() && vars.PAGES_ENABLED == 'true' && needs.update.outputs.pages_ready == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
